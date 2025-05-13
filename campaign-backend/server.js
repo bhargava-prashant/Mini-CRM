@@ -8,15 +8,13 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// MongoDB connection
+
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
 
-// ==========================
-// Schema Definitions
-// ==========================
+
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
@@ -89,9 +87,7 @@ const campaignSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-// ==========================
-// Additional Schema Definitions
-// ==========================
+
 const communicationLogSchema = new mongoose.Schema({
   campaignId: { 
     type: mongoose.Schema.Types.ObjectId, 
@@ -150,9 +146,7 @@ const batchUpdateQueueSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-// ==========================
-// Models
-// ==========================
+
 const User = mongoose.model('User', userSchema);
 const Order = mongoose.model('Order', orderSchema);
 const Segment = mongoose.model('Segment', segmentSchema);
@@ -163,10 +157,7 @@ const CommunicationLog = mongoose.model('CommunicationLog', communicationLogSche
 const MessageQueue = mongoose.model('MessageQueue', messageQueueSchema);
 const BatchUpdateQueue = mongoose.model('BatchUpdateQueue', batchUpdateQueueSchema);
 
-// ==========================
-// ==========================
-// Helper: Build MongoDB Query from Rules
-// ==========================
+
 function buildMongoQuery(rules) {
   if (!rules || !rules.conditions) return {};
 
@@ -225,7 +216,7 @@ async function populateCommunicationLogsAndQueue() {
       const log = await CommunicationLog.create({
         campaignId: campaign._id,
         userId: user._id,
-        message: `Hello ${user.name}, welcome!`, // or use template logic
+        message: `Hello ${user.name}, welcome!`, 
         status: 'QUEUED'
       });
 
@@ -237,7 +228,7 @@ async function populateCommunicationLogsAndQueue() {
       });
     }
 
-    // Optionally update campaign status
+    
     campaign.audienceSize = matchedUsers.length;
     campaign.status = 'scheduled';
     await campaign.save();
@@ -247,15 +238,13 @@ async function populateCommunicationLogsAndQueue() {
 }
 
 
-// ==========================
-// Dummy Vendor API Service
-// ==========================
+
 const vendorApiService = {
   sendMessage: async (userId, message) => {
-    // Simulate API call latency
+
     await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 200));
     
-    // 90% success rate
+  
     const isSuccess = Math.random() < 0.9;
     
     return {
@@ -266,7 +255,7 @@ const vendorApiService = {
     };
   },
 
-  // The real vendor would call our callback API when message is delivered
+
   simulateDeliveryCallback: async (callbackUrl, messageData) => {
     try {
       await axios.post(callbackUrl, messageData);
@@ -278,12 +267,9 @@ const vendorApiService = {
   }
 };
 
-// ==========================
-// Message Queue Consumer
-// ==========================
 async function processMessageQueue() {
   try {
-    // Find pending messages to process, limit batch size
+  
     const pendingMessages = await MessageQueue.find({ status: 'PENDING' })
       .limit(50)
       .sort({ createdAt: 1 });
@@ -294,7 +280,7 @@ async function processMessageQueue() {
 
     console.log(`Processing ${pendingMessages.length} pending messages`);
     
-    // Mark messages as processing
+   
     const messageIds = pendingMessages.map(msg => msg._id);
     await MessageQueue.updateMany(
       { _id: { $in: messageIds } },
@@ -304,10 +290,10 @@ async function processMessageQueue() {
       }
     );
 
-    // Process each message
+
     for (const queueItem of pendingMessages) {
       try {
-        // Get communication log entry
+       
         const commLog = await CommunicationLog.findById(queueItem.communicationLogId)
           .populate('userId');
         
@@ -320,24 +306,21 @@ async function processMessageQueue() {
           continue;
         }
 
-        // Skip if already sent or failed
+        
         if (commLog.status !== 'QUEUED') {
           await MessageQueue.updateOne({ _id: queueItem._id }, { $set: { status: 'COMPLETED' } });
           continue;
         }
 
-        // Generate personalized message
+        
         const personalizedMessage = commLog.message.replace('{name}', commLog.userId.name || 'Customer');
 
-        // Send message via vendor API
+       
         const result = await vendorApiService.sendMessage(commLog.userId._id, personalizedMessage);
 
-        // Create batch update queue entry based on result
         const updateStatus = result.success ? 'SENT' : 'FAILED';
         await addToBatchUpdateQueue(commLog._id, updateStatus);
 
-        // Simulate vendor's callback to our delivery receipt API
-        // In a real scenario, the vendor would call this API directly
         setTimeout(() => {
           vendorApiService.simulateDeliveryCallback(
             `${process.env.BASE_URL || 'http://localhost:5001'}/api/delivery-receipt`,
@@ -350,19 +333,18 @@ async function processMessageQueue() {
           );
         }, 500 + Math.random() * 1000);
 
-        // Mark queue item as completed
+     
         await MessageQueue.updateOne({ _id: queueItem._id }, { $set: { status: 'COMPLETED' } });
       } catch (error) {
         console.error(`Error processing message queue item ${queueItem._id}:`, error);
         
-        // Mark as failed if too many attempts
+
         if (queueItem.processingAttempts >= 3) {
           await MessageQueue.updateOne(
             { _id: queueItem._id },
             { $set: { status: 'FAILED' } }
           );
         } else {
-          // Reset to pending for retry
           await MessageQueue.updateOne(
             { _id: queueItem._id },
             { $set: { status: 'PENDING' } }
@@ -375,20 +357,17 @@ async function processMessageQueue() {
   }
 }
 
-// ==========================
-// Batch Update Queue Helper
-// ==========================
+
 async function addToBatchUpdateQueue(communicationLogId, status) {
   try {
-    // Find an existing batch that hasn't been processed yet
     const existingBatch = await BatchUpdateQueue.findOne({
       status: 'PENDING',
       updatedStatus: status,
-      batchSize: { $lt: 100 } // Max batch size
+      batchSize: { $lt: 100 } 
     });
 
     if (existingBatch) {
-      // Add to existing batch
+ 
       await BatchUpdateQueue.updateOne(
         { _id: existingBatch._id },
         { 
@@ -397,7 +376,7 @@ async function addToBatchUpdateQueue(communicationLogId, status) {
         }
       );
     } else {
-      // Create new batch
+ 
       await BatchUpdateQueue.create({
         communicationLogIds: [communicationLogId],
         batchSize: 1,
@@ -409,9 +388,7 @@ async function addToBatchUpdateQueue(communicationLogId, status) {
   }
 }
 
-// ==========================
-// Batch Update Processor
-// ==========================
+
 async function processBatchUpdates() {
   try {
     // Find pending batch updates
@@ -436,14 +413,13 @@ async function processBatchUpdates() {
           status: batch.updatedStatus
         };
 
-        // Add appropriate timestamp based on status
         if (batch.updatedStatus === 'SENT') {
           updateFields.sentAt = new Date();
         } else if (batch.updatedStatus === 'FAILED') {
           updateFields.failedAt = new Date();
         }
 
-        // Update all communication logs in batch
+      
         await CommunicationLog.updateMany(
           { _id: { $in: batch.communicationLogIds } },
           { $set: updateFields }
@@ -481,34 +457,14 @@ async function processBatchUpdates() {
   }
 }
 
-// ==========================
-// Schedule Queue Processors
-// ==========================
-// Run the message processor every 5 seconds
+
+//run the message processor every 5 seconds
 setInterval(processMessageQueue, 5000);
 
-// Run the batch update processor every 10 seconds
+//run the batch update processor every 10 seconds
 setInterval(processBatchUpdates, 10000);
 
 
-
-
-
-
-
-
-
-
-
-
-// ==========================
-// API Routes
-// ==========================
-
-
-
-
-// 🔹 Preview audience size
 app.post('/api/audience/preview', async (req, res) => {
   try {
     const { rules } = req.body;
@@ -521,7 +477,6 @@ app.post('/api/audience/preview', async (req, res) => {
   }
 });
 
-// 🔹 Create a segment
 app.post('/api/segments', async (req, res) => {
   try {
     const { name, rules } = req.body;
@@ -534,7 +489,7 @@ app.post('/api/segments', async (req, res) => {
   }
 });
 
-// // 🔹 Create a campaign from database data
+
 // app.post('/api/campaigns', async (req, res) => {
 //   try {
 //     const { name, segmentId } = req.body;
@@ -566,7 +521,6 @@ app.post('/api/segments', async (req, res) => {
 //   }
 // });
 
-//🔹 Get all campaigns
 app.get('/api/campaigns', async (req, res) => {
   try {
     const campaigns = await Campaign.find()
@@ -580,7 +534,6 @@ app.get('/api/campaigns', async (req, res) => {
   }
 });
 
-// 🔹 Generate sample data
 app.post('/api/generate-sample-data', async (req, res) => {
   try {
     await User.deleteMany({});
@@ -619,8 +572,6 @@ app.post('/api/generate-sample-data', async (req, res) => {
 
 
 
-
-// 🔹 Enhanced campaign creation with message delivery
 app.post('/api/campaigns', async (req, res) => {
   try {
     const { name, segmentId, audienceSize, messageTemplate } = req.body;
@@ -667,18 +618,15 @@ app.post('/api/campaigns', async (req, res) => {
       queueDocs.push(queueItem);
     }
 
-    // Populate communication logs and queues for draft campaigns
+    
     await populateCommunicationLogsAndQueue();
 
-    // Bulk insert logs
     const insertedLogs = await CommunicationLog.insertMany(commLogDocs);
 
-    // Update queue docs with inserted log ids
     for (let i = 0; i < insertedLogs.length; i++) {
       queueDocs[i].communicationLogId = insertedLogs[i]._id;
     }
 
-    // Bulk insert queue items
     await MessageQueue.insertMany(queueDocs);
 
     res.status(201).json(campaign);
@@ -688,7 +636,6 @@ app.post('/api/campaigns', async (req, res) => {
   }
 });
 
-// 🔹 Delivery receipt API (called by vendor)
 app.post('/api/delivery-receipt', async (req, res) => {
   try {
     const { communicationLogId, status, vendorMessageId, timestamp } = req.body;
@@ -714,7 +661,7 @@ app.post('/api/delivery-receipt', async (req, res) => {
   }
 });
 
-// 🔹 Get campaign delivery stats
+
 app.get('/api/campaigns/:id/stats', async (req, res) => {
   try {
     const campaignId = req.params.id;
@@ -754,9 +701,6 @@ app.get('/api/campaigns/:id/stats', async (req, res) => {
 });
 
 
-// ==========================
-// Start Server
-// ==========================
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
