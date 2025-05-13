@@ -1,7 +1,7 @@
 # Mini-CRM Platform
-Landing Page(https://github.com/bhargava-prashant/Mini-CRM/blob/master/client/src/assets/Screenshot%202025-05-13%20203718.png)
+Landing Page()
+![Landing Page]([https://prashant-bhargava-dev.onrender.com/assets/preview.png](https://github.com/bhargava-prashant/Mini-CRM/blob/master/client/src/assets/Screenshot%202025-05-13%20203718.png))
 
-![Mini-CRM Platform](https://prashant-bhargava-dev.onrender.com/assets/preview.png)
 
 ## 📋 Table of Contents
 - [Introduction](#introduction)
@@ -86,6 +86,11 @@ The Mini-CRM platform is built with a microservices architecture consisting of f
 **4. AI-CRM:** Processes natural language queries and converts them to MongoDB query objects.
 
 **5. Client (UI):** React-based frontend for user interaction with the platform.
+![Mini-CRM Campaign Platform](https://github.com/bhargava-prashant/Mini-CRM/blob/master/client/src/assets/Screenshot%202025-05-13%20204003.png)
+
+
+![Mini-CRM Campaign History Platform](https://github.com/bhargava-prashant/Mini-CRM/blob/master/client/src/assets/Screenshot%202025-05-13%20204025.png)
+
 
 ## 🛠️ Tech Stack
 
