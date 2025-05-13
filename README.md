@@ -1,7 +1,6 @@
 # Mini-CRM Platform
 
 ![Landing Page CRM Platform](https://github.com/bhargava-prashant/Mini-CRM/blob/master/client/src/assets/Screenshot%202025-05-13%20203718.png)
-https://prashant-bhargava-dev.onrender.com/assets/preview.png](https://github.com/bhargava-prashant/Mini-CRM/blob/master/client/src/assets/Screenshot%202025-05-13%20203718.png
 
 ## 📋 Table of Contents
 - [Introduction](#introduction)
