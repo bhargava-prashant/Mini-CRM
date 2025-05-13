@@ -48,22 +48,21 @@ Respond only in valid JSON.
     let reply = response.data.choices[0].message.content;
     console.log('Raw AI response:', reply);
 
-    // Remove any non-JSON artifacts (like markdown code blocks)
+    
     reply = reply.replace(/```json|```|\\/g, '').trim();
     
     try {
-      // Parse the JSON
+      
       const parsedData = JSON.parse(reply);
       
-      // Replace time placeholders with actual Date objects
+     
       if (parsedData.type === "segment" && parsedData.query) {
-        // Function to recursively process query object
         function processQueryObject(obj) {
           for (const key in obj) {
             if (typeof obj[key] === 'object' && obj[key] !== null) {
               processQueryObject(obj[key]);
             } else if (obj[key] === "TIME_THRESHOLD") {
-              // Calculate 6 months ago as default
+        
               const sixMonthsAgo = new Date();
               sixMonthsAgo.setDate(sixMonthsAgo.getDate() - 180);
               obj[key] = sixMonthsAgo.toISOString();
@@ -79,7 +78,6 @@ Respond only in valid JSON.
     } catch (parseError) {
       console.error("JSON parse error:", parseError.message);
       
-      // Try to extract JSON from the response if parsing fails
       const jsonMatch = reply.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         try {
