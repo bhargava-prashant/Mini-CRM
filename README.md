@@ -1,7 +1,7 @@
 # Mini-CRM Platform
-Landing Page()
-![Landing Page]([https://prashant-bhargava-dev.onrender.com/assets/preview.png](https://github.com/bhargava-prashant/Mini-CRM/blob/master/client/src/assets/Screenshot%202025-05-13%20203718.png))
 
+![Landing Page CRM Platform](https://github.com/bhargava-prashant/Mini-CRM/blob/master/client/src/assets/Screenshot%202025-05-13%20203718.png)
+https://prashant-bhargava-dev.onrender.com/assets/preview.png](https://github.com/bhargava-prashant/Mini-CRM/blob/master/client/src/assets/Screenshot%202025-05-13%20203718.png
 
 ## 📋 Table of Contents
 - [Introduction](#introduction)
@@ -18,7 +18,6 @@ Landing Page()
 
 Mini-CRM is a comprehensive customer relationship management platform built as part of the Xeno SDE Internship Assignment 2025. The platform enables businesses to perform customer segmentation, create personalized marketing campaigns, and gain intelligent insights through AI integration.
 
-**Live Demo:** [https://prashant-bhargava-dev.onrender.com/](https://prashant-bhargava-dev.onrender.com/)
 
 **GitHub Repository:** [https://github.com/bhargava-prashant/Mini-CRM](https://github.com/bhargava-prashant/Mini-CRM)
 
