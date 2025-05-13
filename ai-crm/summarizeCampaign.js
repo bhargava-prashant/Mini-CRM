@@ -2,7 +2,7 @@ const axios = require("axios");
 require("dotenv").config();
 
 async function summarizeCampaignPerformance(campaign, users) {
-  // Format dates as readable strings
+
   const campaignCreated = new Date(campaign.createdAt).toLocaleDateString();
   
   const userSummaries = users.map(u => {
