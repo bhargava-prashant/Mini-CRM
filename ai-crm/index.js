@@ -7,16 +7,15 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Connect to MongoDB first
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.error(err));
 
-// Import models - MUST come after mongoose connection but before using them
 const User = require("./models/User");
 const Campaign = require("./models/Campaign");
 
-// Now import services that use the models
+
 const interpretQuery = require("./aiParser");
 const summarizeCampaignPerformance = require("./summarizeCampaign");
 
@@ -28,11 +27,11 @@ app.post("/ai-query", async (req, res) => {
     console.log("Processed query result:", JSON.stringify(result));
 
     if (result.type === "segment") {
-      // Execute the query against MongoDB
+   
       const users = await User.find(result.query);
       console.log(`Found ${users.length} matching users`);
       
-      // Generate a conversational response
+      
       let conversationalResponse = "";
       
       if (users.length === 0) {
@@ -53,7 +52,7 @@ app.post("/ai-query", async (req, res) => {
     }
 
     if (result.type === "campaign") {
-      // Find the campaign by name
+    
       const campaign = await Campaign.findOne({ 
         name: { $regex: new RegExp(result.campaignName, "i") } 
       });
@@ -65,8 +64,7 @@ app.post("/ai-query", async (req, res) => {
         });
       }
 
-      // Get users for the campaign summary
-      const users = await User.find().limit(50);  // Limit to 50 users for performance
+      const users = await User.find().limit(50);  
       
       const summary = await summarizeCampaignPerformance(campaign, users);
       
@@ -94,7 +92,6 @@ app.post("/ai-query", async (req, res) => {
   }
 });
 
-// Add a simple health check endpoint
 app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date() });
 });
