@@ -72,35 +72,34 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Signup Controller
+
 exports.signup = async (req, res) => {
   const { name, email, password } = req.body;
   
   try {
-    // Check if the email already exists
+    
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: 'Email already in use' });
     }
 
-    // Hash the password
+   
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user with all tracking fields properly initialized
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
-      loginCount: 0,           // Initial login count
-      visitCount: 0,           // Initial visit count
-      orderCount: 0,           // Initial order count
-      totalSpent: 0,           // Initial total spent
-      totalOrderValue: 0,      // Initial total order value
-      lastActive: Date.now(),  // Set last active to current date/time
-      firstPurchaseDate: null, // Initially null, set on first purchase
-      orderHistory: [],        // Initialize empty order history array
-      isInactive: false,       // User is active by default
-      accountCreated: Date.now() // Set account creation date
+      loginCount: 0,         
+      visitCount: 0,           
+      orderCount: 0,           
+      totalSpent: 0,          
+      totalOrderValue: 0,      
+      lastActive: Date.now(),  
+      firstPurchaseDate: null, 
+      orderHistory: [],        
+      isInactive: false,       
+      accountCreated: Date.now() 
     });
 
     res.json({ 
@@ -122,24 +121,22 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Find user by email
+    
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Compare password with hashed password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Fix: Update both login count and visit count
+
     user.loginCount = (user.loginCount || 0) + 1;
     user.visitCount = (user.visitCount || 0) + 1;
     user.lastActive = Date.now();
     
-    // Check if user was previously marked as inactive
     if (user.isInactive) {
       user.isInactive = false; // Reactivate user
     }
