@@ -3,7 +3,7 @@ import { X, Plus, ChevronRight, Users, BarChart, PieChart, RefreshCw, Send, Cloc
 
 
 // API service for backend calls
-const API_BASE_URL = "http://localhost:5001/api";
+const API_BASE_URL = "https://mini-crm-l710.onrender.com/api";
 
 const apiService = {
   calculateAudienceSize: async (rules) => {
