@@ -35,10 +35,10 @@ export default function SignIn() {
       const userObject = jwtDecode(response.credential);
       console.log("Google User Info:", userObject);
 
-      // Store user info
+ 
       localStorage.setItem("googleUser", JSON.stringify(userObject));
 
-      // Redirect to home page (your landing page at /)
+   
       navigate("/campaign");
 
     } catch (err) {
